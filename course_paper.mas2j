@@ -1,0 +1,14 @@
+/* Jason Project */
+
+MAS course_paper {
+
+    infrastructure: Centralised
+
+    environment: gomoku.GomokuEnv
+
+    agents:
+
+        initiator;
+
+}
+
