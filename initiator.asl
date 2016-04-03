@@ -12,6 +12,7 @@ win(5).
 
 /* Plans */
 
+@ig
 +!initGame 
 	: true 
 	<- 	!initPlayers;
@@ -24,6 +25,7 @@ win(5).
 		.broadcast(tell, win(W));
 		!startGame.
 
+@ib1		
 +!initBoard(X,Y) 
 	: columns(MaxColumn) & Y <= MaxColumn & rows(MaxRow) & X <= MaxRow 
 	<-	.print("Initiating cell (", X, ",", Y, ")");
@@ -31,13 +33,16 @@ win(5).
 		.create_agent(Cell, "cell.asl");
 		.send(Cell, tell, position(X,Y));
 		!initBoard(X, Y + 1).
+@ib2
 +!initBoard(X,Y) 
 	: columns(MaxColumn) & Y > MaxColumn 
 	<- !initBoard(X + 1, 1).			   
+@ib3
 +!initBoard(X,Y) 
 	: rows(MaxRow) & X > MaxRow 
 	<- 	.print("Last row built, board complete.").
-				   
+
+@ip	
 +!initPlayers 
 	: true 
 	<- 	.print("Initiating players");
@@ -45,14 +50,10 @@ win(5).
 		.concat("player", 2, SecondPlayer);
 		.create_agent(FirstPlayer, "player.asl");
 		.create_agent(SecondPlayer, "player.asl");
-		.send(FirstPlayer, tell, goingFirst).
-						
+		.send(FirstPlayer, tell, going_first).
+	
+@sg		
 +!startGame 
 	: true 
 	<- 	.print("Players and board initiated, let the game begin!");
-		.broadcast(tell, letTheGameBegin).
-					  
-+!askForDecision.
-+decisionMade[source(A)] 
-	: true 
-	<- 	-decisionMade[source(A)].
+		.broadcast(tell, begin).
