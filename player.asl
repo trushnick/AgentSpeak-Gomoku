@@ -110,7 +110,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 */
 @mm2		
 +!make_move
-	: my_threat(Threat) & Threat >= 4
+	: my_threat(Threat) & Threat == 4
 	<- 	?my_threats(TL);
 		.member([Cell, Threat], TL);
 		!make_move(Cell, Threat).

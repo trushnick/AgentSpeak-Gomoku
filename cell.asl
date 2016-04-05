@@ -249,10 +249,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X, "_", Y - 1, NextCell);
 		.send(NextCell, achieve, waveHL(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveHR(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @whl6[atomic]
 +!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X, "_", Y - 1, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
 	
 /*
 	waveHR - wave horizontal right
@@ -290,7 +293,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @whr6[atomic]
 +!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X, "_", Y + 1, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
 	
 /*
 	waveVU - wave vertical up
@@ -328,7 +335,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @wvu6[atomic]
 +!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X - 1, "_", Y, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
 
 /*
 	waveVD - wave vertical down
@@ -366,7 +377,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @wvd6[atomic]
 +!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X + 1, "_", Y, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
 
 /*
 	waveDB - wave diagonal back
@@ -404,7 +419,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @wdb6[atomic]
 +!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X - 1, "_", Y - 1, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
 
 /*
 	waveDF - wave diagonal forward
@@ -442,7 +461,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @wdf6[atomic]
 +!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).	
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X + 1, "_", Y + 1, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).	
 	
 /*
 	waveSB - wave side [diagonal] back
@@ -480,7 +503,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @wsb6[atomic]
 +!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X + 1, "_", Y - 1, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
 	
 /*
 	waveSF - wave side [diagonal] forward
@@ -518,7 +545,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 // Тут должно быть распространение волны в обратном направлении
 @wsf6[atomic]
 +!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer).	
+	: busy(AnotherPlayer)
+	<- 	?position(X, Y);
+		.concat("cell", X - 1, "_", Y + 1, NextCell);
+		.my_name(I);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).	
 	
 /*
 	А это все потому что правила не работают с askOne
