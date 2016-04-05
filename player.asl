@@ -116,29 +116,38 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 		!make_move(Cell, Threat).
 /*
 	Если противник имеет бОльшую угрозу, чем я, - защищаюсь.
-	При этом из всех клеток с наибольшей угрозой, выбираю наиболее выгодную для себя (нет)
+	TODO:
+	При этом из всех клеток с наибольшей угрозой, выбираю наиболее выгодную для себя
+	А из наиболее выгодных выбираю случайным образом.
 */
 @mm3
 +!make_move
 	: my_threat(Threat) & opponent_threat(O_Threat) & O_Threat > Threat
 	<-	?opponent_threats(TL);
-		.member([Cell, O_Threat], TL);
-		/*+decision("cell0_0", -1);
+		?my_threats(MTL);
+		+decisions([], -1);
 		for ( .member([Cell, O_Threat], TL) ) {
-			.member([Cell, Temp_Threat], MTL);
-			?decision(TCell, T);
-			if (Temp_Threat > T) {
-				-+decision(Cell, Temp_Threat);
+			?decisions(DL, CurrThreat);
+			.member([Cell, NewThreat], MTL);
+			if (NewThreat > CurrThreat) {
+				-+decisions([Cell], NewThreat);
+			} else {
+				if (NewThreat == CurrThreat) {
+					.concat(DL, [Cell], NDL);
+					-+decisions(NDL, CurrThreat);
+				};
 			};
 		};
-		?decision(Cell, T);
-		-decision(Cell, T);*/
-		?my_threats(MTL);
-		.member([Cell, My_Threat], MTL);
+		?decisions(DL, My_Threat);
+		.length(DL, LL);
+		.nth(math.floor(math.random(LL)), DL, Cell);
+		-decisions(_,_);
 		!make_move(Cell, My_Threat).
 /*
 	В любой другой ситуации делаю самый перспективный 
 	атакующий ход
+	TODO -> TO-TEST
+	Выбираю случайно из всех наиболее перспективных
 */
 @mm4
 +!make_move
@@ -146,7 +155,16 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 	<-	?my_threats_values(VL);
 		.max(VL, MV);
 		?my_threats(TL);
-		.member([Cell, MV], TL);
+		+decisionList([]);
+		for ( .member([Cell, MV], TL) ) {
+			?decisionList(DL);
+			.concat(DL, [Cell], NDL);
+			-+decisionList(NDL);
+		}
+		?decisionList(DL);
+		.length(DL, LL);
+		.nth(math.floor(math.random(LL)), DL, Cell);
+		-decisionList(_);
 		!make_move(Cell, MV).
 		
 /*

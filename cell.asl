@@ -60,14 +60,38 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 +busy(Player)
 	: true
 	<- 	!doesPlayerWon(Player);
-		-+threat_hl(player1, -1);
-		-+threat_hr(player2, -1);
-		-+threat_vu(player1, -1);
-		-+threat_vd(player2, -1);
-		-+threat_db(player1, -1);
-		-+threat_df(player2, -1);
-		-+threat_sb(player1, -1);
-		-+threat_sf(player2, -1);
+		-threat_hl(player1, _);
+		-threat_hr(player1, _);
+		-threat_vu(player1, _);
+		-threat_vd(player1, _);
+		-threat_db(player1, _);
+		-threat_df(player1, _);
+		-threat_sb(player1, _);
+		-threat_sf(player1, _);
+		+threat_hl(player1, -1);
+		+threat_hr(player1, -1);
+		+threat_vu(player1, -1);
+		+threat_vd(player1, -1);
+		+threat_db(player1, -1);
+		+threat_df(player1, -1);
+		+threat_sb(player1, -1);
+		+threat_sf(player1, -1);
+		-threat_hl(player2, _);
+		-threat_hr(player2, _);
+		-threat_vu(player2, _);
+		-threat_vd(player2, _);
+		-threat_db(player2, _);
+		-threat_df(player2, _);
+		-threat_sb(player2, _);
+		-threat_sf(player2, _);
+		+threat_hl(player2, -1);
+		+threat_hr(player2, -1);
+		+threat_vu(player2, -1);
+		+threat_vd(player2, -1);
+		+threat_db(player2, -1);
+		+threat_df(player2, -1);
+		+threat_sb(player2, -1);
+		+threat_sf(player2, -1);
 		-threat(player1, _);
 		-threat(player2, _);
 		+threat(player1, -1);
@@ -210,13 +234,11 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 /*
 	waveHL - wave horizontal left
 	Распространяю волну по горизонтали налево
-	Останавливаюсь, когда кол-во оставшихся клеток равно 0 или
-	когда упрусь в границу поля. 
-	Если нахожу клетку, уже занятую этим игроком, увеличиваю угрозу и передаю дальше и 
-	(по идеи) должен отправить в обратном направлении волну, чтобы пересчитать угрозу справа
-	Если нахожу клетку, занятую другим игроком, останавливаю волновой процесс и (должен)
-	начинаю его в обратном направлении для перерасчета. При этом в текущем направлении надо
-	начать распространение для другого игрока (для пересчета угрозы).
+	Останавливаюсь либо когда "сила волны" (количество оставшихся клеток) равно 0,
+	либо когда достиг края игрового поля (дальше передавать некуда).
+	
+	При распространении могут возникнуть следующие случаи:
+	- 
 	
 	Распространение волны в других направлениях абсолютно аналогично этому.
 */
@@ -251,11 +273,15 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.send(PrevCell, achieve, waveHR(Player, 1, 4, NewSourceList)).
 @whl6[atomic]
 +!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: busy(AnotherPlayer) & .my_name(I) & .member(I, SourceList).
+@whl7[atomic]
++!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X, "_", Y - 1, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
+		.concat(SourceList, [I], NewSourceList);
+		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, NewSourceList)).
 	
 /*
 	waveHR - wave horizontal right
@@ -297,7 +323,7 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 	<- 	?position(X, Y);
 		.concat("cell", X, "_", Y + 1, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
+		.send(NextCell, achieve, waveHR(AnotherPlayer, 1, 4, [I])).
 	
 /*
 	waveVU - wave vertical up
@@ -332,14 +358,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X - 1, "_", Y, NextCell);
 		.send(NextCell, achieve, waveVU(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveVD(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @wvu6[atomic]
 +!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X - 1, "_", Y, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
+		.send(NextCell, achieve, waveVU(AnotherPlayer, 1, 4, [I])).
 
 /*
 	waveVD - wave vertical down
@@ -374,14 +399,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X + 1, "_", Y, NextCell);
 		.send(NextCell, achieve, waveVD(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveVU(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @wvd6[atomic]
 +!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X + 1, "_", Y, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
+		.send(NextCell, achieve, waveVD(AnotherPlayer, 1, 4, [I])).
 
 /*
 	waveDB - wave diagonal back
@@ -416,14 +440,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X - 1, "_", Y - 1, NextCell);
 		.send(NextCell, achieve, waveDB(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveDF(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @wdb6[atomic]
 +!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X - 1, "_", Y - 1, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
+		.send(NextCell, achieve, waveDB(AnotherPlayer, 1, 4, [I])).
 
 /*
 	waveDF - wave diagonal forward
@@ -458,14 +481,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X + 1, "_", Y + 1, NextCell);
 		.send(NextCell, achieve, waveDF(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveDB(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @wdf6[atomic]
 +!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X + 1, "_", Y + 1, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).	
+		.send(NextCell, achieve, waveDF(AnotherPlayer, 1, 4, [I])).	
 	
 /*
 	waveSB - wave side [diagonal] back
@@ -500,14 +522,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X + 1, "_", Y - 1, NextCell);
 		.send(NextCell, achieve, waveSB(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveSF(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @wsb6[atomic]
 +!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X + 1, "_", Y - 1, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).
+		.send(NextCell, achieve, waveSB(AnotherPlayer, 1, 4, [I])).
 	
 /*
 	waveSF - wave side [diagonal] forward
@@ -542,14 +563,13 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		.concat("cell", X - 1, "_", Y + 1, NextCell);
 		.send(NextCell, achieve, waveSF(Player, Threat + 1, CellsToGo - 1, NewSourceList));
 		.send(PrevCell, achieve, waveSB(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
 @wsf6[atomic]
 +!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: busy(AnotherPlayer)
 	<- 	?position(X, Y);
 		.concat("cell", X - 1, "_", Y + 1, NextCell);
 		.my_name(I);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, [I])).	
+		.send(NextCell, achieve, waveSF(AnotherPlayer, 1, 4, [I])).	
 	
 /*
 	А это все потому что правила не работают с askOne
