@@ -36,21 +36,6 @@ public class GomokuEnv extends Environment {
 			} catch (Exception e) {
 				logger.info(e.getMessage());
 			}
-		} else if (action.getFunctor().equals("makeDecision")) {
-			Cell cell;
-			GomokuRoutines.Player player = agName.equals("player1") ? GomokuRoutines.Player.FIRST : GomokuRoutines.Player.SECOND;
-			cell = routines.makeDecision(player);
-			if (routines.isWinningMove(cell, player)) {
-				Literal decision = Literal.parseLiteral("winningDecision");
-				decision.addTerm(ASSyntax.createNumber(cell.getX() + 1));
-				decision.addTerm(ASSyntax.createNumber(cell.getY() + 1));
-				addPercept(agName, decision);		
-			} else {
-				Literal decision = Literal.parseLiteral("decision");
-				decision.addTerm(ASSyntax.createNumber(cell.getX() + 1));
-				decision.addTerm(ASSyntax.createNumber(cell.getY() + 1));
-				addPercept(agName, decision);
-			}
 		} else {
 			logger.info("executing: "+action+", but not implemented!");
 			return false;

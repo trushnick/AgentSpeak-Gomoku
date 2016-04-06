@@ -23,6 +23,8 @@ win(5).
 		.broadcast(tell, columns(Columns));
 		?win(W);
 		.broadcast(tell, win(W));
+		.broadcast(achieve, lookAround);
+		.wait(10);
 		!startGame.
 
 @ib1		

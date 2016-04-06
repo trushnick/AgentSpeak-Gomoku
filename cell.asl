@@ -207,30 +207,32 @@ bottomRow :- position(X, _) & rows(R) & X == R.
 		игрока в том же направлении. (TODO)
 		
 */
-@w1[atomic]		
+@w1	
 +!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: 	CellsToGo = 0.	
-@w2[atomic]
+@w2
 +!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: 	not busy(Player) & .my_name(I) & .member(I, SourceList).	
-@w3[atomic]	
+@w3
 +!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: 	busy(Player) & .my_name(I) & .member(I, SourceList)
 	<-	!sendForward(Player, Threat + 1, CellsToGo - 1, SourceList, PrevCell).
-@w4[atomic]	
+@w4
 +!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: 	not busy(_)
-	<- 	-threat_hl(Player, _);
-		+threat_hl(Player, Threat);
+	<- 	?position(X, Y);
+		.send(PrevCell, askOne, position(PrevX, PrevY), position(PrevX, PrevY));
+		.wait(5);
+		!calculateThreat(Player, Threat, X - PrevX, Y - PrevY);
 		!sendForward(Player, Threat / 2, CellsToGo - 1, SourceList, PrevCell).
-@w5[atomic]
+@w5
 +!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: 	busy(Player)
 	<- 	.my_name(I);
 		.concat(SourceList, [I], NewSourceList);
 		.send(PrevCell, achieve, wave(Player, 1, 4, NewSourceList));
 		!sendForward(Player, Threat + 1, CellsToGo - 1, NewSourceList, PrevCell).
-@w7[atomic]
+@w6
 +!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
 	: 	busy(AnotherPlayer)
 	<- 	.my_name(I);
@@ -240,6 +242,7 @@ bottomRow :- position(X, _) & rows(R) & X == R.
 /*
 	Пересылаю волну дальше, если не уперся в край игрового поля.
 */
+@sf1
 +!sendForward(Player, Threat, CellsToGo, SourceList, PrevCell)
 	:	true
 	<-	?position(X, Y);
@@ -254,44 +257,96 @@ bottomRow :- position(X, _) & rows(R) & X == R.
 		}.
 		
 /*
+	Вычисляю новую угрозу для соответствующего направления.
+	Направление вычисляется на основе моих координат и координат предыдущей клетки.
+*/
+@ct1
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == -1 & DeltaY == -1
+	<-	-threat_db(Player, _);
+		+threat_db(Player, Threat).
+@ct2
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == -1 & DeltaY == 0
+	<-	-threat_vu(Player, _);
+		+threat_vu(Player, Threat).
+@ct3
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == -1 & DeltaY == 1
+	<-	-threat_sf(Player, _);
+		+threat_sf(Player, Threat).
+@ct4
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == 0 & DeltaY == -1
+	<-	-threat_hl(Player, _);
+		+threat_hl(Player, Threat).
+@ct5
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == 0 & DeltaY == 1
+	<-	-threat_hr(Player, _);
+		+threat_hr(Player, Threat).
+@ct6
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == 1 & DeltaY == -1
+	<-	-threat_sb(Player, _);
+		+threat_sb(Player, Threat).
+@ct7
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == 1 & DeltaY == 0
+	<-	-threat_vd(Player, _);
+		+threat_vd(Player, Threat).
+@ct8
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	:	DeltaX == 1 & DeltaY == 1
+	<-	-threat_df(Player, _);
+		+threat_df(Player, Threat).		
+@ct9[atomic, breakpoint]
++!calculateThreat(Player, Threat, DeltaX, DeltaY)
+	: 	true
+	<-	.print("Not implemented, stopping execution in 10 seconds");
+		.wait(10000);
+		.stopMAS.
+		
+		
+/*
 	А это все потому что правила не работают с askOne
 */
-@fsdw1[atomic]
+@thl1[atomic]
 +threat_hl(Player, HL)
 	: 	threat_hr(Player, HR) & threat(Player, Threat) & HL + HR > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, HL + HR).
-@fsdw2[atomic]
+@thr1[atomic]
 +threat_hr(Player, HR)
 	: 	threat_hl(Player, HL) & threat(Player, Threat) & HL + HR > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, HL + HR).
-@fsdw3[atomic]
+@tvu1[atomic]
 +threat_vu(Player, VU)
 	: 	threat_vd(Player, VD) & threat(Player, Threat) & VU + VD > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, VU + VD).
-@fsdw4[atomic]
+@tvd1[atomic]
 +threat_vd(Player, VD)
 	: 	threat_vu(Player, VU) & threat(Player, Threat) & VU + VD > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, VU + VD).
-@fsdw5[atomic]
+@tdb1[atomic]
 +threat_db(Player, DB)
 	: 	threat_df(Player, DF) & threat(Player, Threat) & DB + DF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, DB + DF).
-@fsdw6[atomic]
+@tdf1[atomic]
 +threat_df(Player, DF)
 	: 	threat_db(Player, DB) & threat(Player, Threat) & DB + DF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, DB + DF).
-@fsdw7[atomic]
+@tsb1[atomic]
 +threat_sb(Player, SB)
 	: 	threat_sf(Player, SF) & threat(Player, Threat) & SB + SF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, SB + SF).
-@fsdw8[atomic]
+@tsf1[atomic]
 +threat_sf(Player, SF)
 	: 	threat_sb(Player, SB) & threat(Player, Threat) & SB + SF > Threat
 	<-	-threat(Player, Threat);

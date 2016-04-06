@@ -14,7 +14,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 
 @b1
 +begin[source(A)]
-	: going_first
+	: 	going_first
 	<- 	.my_name(I);
 		.broadcast(tell, opponent(I));
 		?rows(R);
@@ -24,14 +24,14 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 		!make_first_move(math.ceil( R / 2), math.ceil(C / 2)).
 @b2
 +begin[source(A)] 
-	: true 
+	: 	true 
 	<- 	.my_name(I);
 		.broadcast(tell, opponent(I));
 		-begin[source(A)].
 
 @mfm
 +!make_first_move(X, Y)
-	: true
+	: 	true
 	<- 	.concat("cell", X, "_", Y, Cell);
 		.print("Moving first.");
 		.print("My move is (", X, ",", Y, ")");
@@ -47,7 +47,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 */
 @t[atomic]
 +turn[source(A)]
-	: true
+	: 	true
 	<- 	.wait(300);
 		?rows(R);
 		?columns(C);
@@ -86,7 +86,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 */
 @mm1		
 +!make_move(Cell, Threat)
-	: true
+	: 	true
 	<- 	.send(Cell, askOne, position(X, Y), position(X, Y));
 		.print("My move is (", X, ",", Y, ")");
 		move(X, Y);
@@ -110,7 +110,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 */
 @mm2		
 +!make_move
-	: my_threat(Threat) & Threat == 4
+	: 	my_threat(Threat) & Threat == 4
 	<- 	?my_threats(TL);
 		.member([Cell, Threat], TL);
 		!make_move(Cell, Threat).
@@ -122,7 +122,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 */
 @mm3
 +!make_move
-	: my_threat(Threat) & opponent_threat(O_Threat) & O_Threat > Threat
+	: 	my_threat(Threat) & opponent_threat(O_Threat) & O_Threat > Threat
 	<-	?opponent_threats(TL);
 		?my_threats(MTL);
 		+decisions([], -1);
@@ -151,7 +151,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 */
 @mm4
 +!make_move
-	: true
+	: 	true
 	<-	?my_threats_values(VL);
 		.max(VL, MV);
 		?my_threats(TL);
@@ -170,3 +170,5 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 /*
 	Заглушки
 */
++!lookAround
+	:	true.
