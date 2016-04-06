@@ -32,6 +32,7 @@ win(5).
 		.concat("cell", X, "_", Y, Cell);
 		.create_agent(Cell, "cell.asl");
 		.send(Cell, tell, position(X,Y));
+		.send(Cell, achieve, lookAround);
 		!initBoard(X, Y + 1).
 @ib2
 +!initBoard(X,Y) 

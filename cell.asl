@@ -1,6 +1,8 @@
 // Agent cell in project course_paper.mas2j
 /* Initial beliefs and rules */
 
+surroundingCells([]).
+
 threat_hl(player1, 0).
 threat_hr(player1, 0).
 threat_vu(player1, 0).
@@ -27,39 +29,109 @@ rightColumn :- position(_, Y) & columns(C) & Y == C.
 topRow :- position(X, _) & X == 1.
 bottomRow :- position(X, _) & rows(R) & X == R.
 
-// Для отладки
-horWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
-vertWin(Player) :- threat_vu(Player, VU) & threat_vd(Player, VD) & VU + VD >= 4.
-diagWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
-sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
-
 /* Initial goals */
 
 /* Plans */
-// Для отладки
-+!doesPlayerWon(Player)
-	: 	horWin(Player)
-	<-	.print("Horizontal win").
-+!doesPlayerWon(Player)
-	:	vertWin(Player)
-	<-	.print("Vertical win").
-+!doesPlayerWon(Player)
-	:	diagWin(Player)
-	<-	.print("Diagonal win").
-+!doesPlayerWon(Player)
-	:	sideWin(Player)
-	<-	.print("Side diagonal win").
-+!doesPlayerWon(Player)
-	: 	true.
+
+/*
+	Осматриваюсь вокруг и завожу список соседних клеток.
+*/
+@la1[atomic]
++!lookAround
+	:	leftColumn & topRow
+	<-	?position(X, Y);
+		.concat("cell", X    , "_", Y + 1, Cell1);
+		.concat("cell", X + 1, "_", Y    , Cell2);
+		.concat("cell", X + 1, "_", Y + 1, Cell3);
+		-+surroundingCells([Cell1, Cell2, Cell3]).
+@la2[atomic]
++!lookAround
+	:	leftColumn & bottomRow
+	<-	?position(X, Y);
+		.concat("cell", X - 1, "_", Y    , Cell1);
+		.concat("cell", X - 1, "_", Y + 1, Cell2);
+		.concat("cell", X    , "_", Y + 1, Cell3);
+		-+surroundingCells([Cell1, Cell2, Cell3]).
+@la3[atomic]
++!lookAround
+	:	rightColumn & topRow
+	<-	?position(X, Y);
+		.concat("cell", X    , "_", Y - 1, Cell1);
+		.concat("cell", X + 1, "_", Y - 1, Cell2);
+		.concat("cell", X + 1, "_", Y    , Cell3);
+		-+surroundingCells([Cell1, Cell2, Cell3]).
+@la4[atomic]
++!lookAround
+	:	rightColumn & bottomRow
+	<-	?position(X, Y);
+		.concat("cell", X    , "_", Y + 1, Cell1);
+		.concat("cell", X + 1, "_", Y    , Cell2);
+		.concat("cell", X + 1, "_", Y + 1, Cell3);
+		-+surroundingCells([Cell1, Cell2, Cell3]).	
+@la5[atomic]
++!lookAround
+	:	leftColumn
+	<-	?position(X, Y);
+		.concat("cell", X - 1, "_", Y    , Cell1);
+		.concat("cell", X - 1, "_", Y + 1, Cell2);
+		.concat("cell", X    , "_", Y + 1, Cell3);
+		.concat("cell", X + 1, "_", Y    , Cell4);
+		.concat("cell", X + 1, "_", Y + 1, Cell5);
+		-+surroundingCells([Cell1, Cell2, Cell3, Cell4, Cell5]).
+@la6[atomic]
++!lookAround
+	:	rightColumn
+	<-	?position(X, Y);
+		.concat("cell", X - 1, "_", Y - 1, Cell1);
+		.concat("cell", X - 1, "_", Y    , Cell2);
+		.concat("cell", X    , "_", Y - 1, Cell3);
+		.concat("cell", X + 1, "_", Y - 1, Cell4);
+		.concat("cell", X + 1, "_", Y    , Cell5);
+		-+surroundingCells([Cell1, Cell2, Cell3, Cell4, Cell5]).
+@la7[atomic]
++!lookAround
+	:	topRow
+	<-	?position(X, Y);
+		.concat("cell", X    , "_", Y - 1, Cell1);
+		.concat("cell", X    , "_", Y + 1, Cell2);
+		.concat("cell", X + 1, "_", Y - 1, Cell3);
+		.concat("cell", X + 1, "_", Y    , Cell4);
+		.concat("cell", X + 1, "_", Y + 1, Cell5);
+		-+surroundingCells([Cell1, Cell2, Cell3, Cell4, Cell5]).
+@la8[atomic]
++!lookAround
+	:	bottomRow
+	<-	?position(X, Y);
+		.concat("cell", X - 1, "_", Y - 1, Cell1);
+		.concat("cell", X - 1, "_", Y    , Cell2);
+		.concat("cell", X - 1, "_", Y + 1, Cell3);
+		.concat("cell", X    , "_", Y - 1, Cell4);
+		.concat("cell", X    , "_", Y + 1, Cell5);
+		-+surroundingCells([Cell1, Cell2, Cell3, Cell4, Cell5]).
+@la9[atomic]
++!lookAround
+	:	true
+	<-	?position(X, Y);
+		.concat("cell", X - 1, "_", Y - 1, Cell1);
+		.concat("cell", X - 1, "_", Y    , Cell2);
+		.concat("cell", X - 1, "_", Y + 1, Cell3);
+		.concat("cell", X    , "_", Y - 1, Cell4);
+		.concat("cell", X    , "_", Y + 1, Cell5);
+		.concat("cell", X + 1, "_", Y - 1, Cell6);
+		.concat("cell", X + 1, "_", Y    , Cell7);
+		.concat("cell", X + 1, "_", Y + 1, Cell8);
+		-+surroundingCells([Cell1, Cell2, Cell3, Cell4, Cell5, Cell6, Cell7, Cell8]).
+
 /*
 	Когда игрок ходит сюда, 
 	я обнуляю все угрозы (чтобы в эту клетку больше никто не поставил)
 	и распространяю волну для обновления угроз соседних клеток
-*/
+*/		
 @b[atomic]
 +busy(Player)
-	: true
-	<- 	!doesPlayerWon(Player);
+	: 	true
+	<- 	?threat(Player, Threat);
+		.print("Threat was ", Threat); // For Debug
 		-threat_hl(player1, _);
 		-threat_hr(player1, _);
 		-threat_vu(player1, _);
@@ -99,519 +171,129 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 		!startWave(Player).
 	
 /*
-	Стартую волновой процесс
-	При этом надо предусмотреть крайние ситуации:
-	- я в одном из углом
-	- я в одном из крайних рядов
+	Стартую волновой процесс, посылая волны всем известным соседним клеткам,
+	которые были обнаружены на этапе инициализации.
 */
 @sw1[atomic]
 +!startWave(Player)
-	: leftColumn & topRow
-	<- 	?position(X, Y);
+	: 	true
+	<- 	?surroundingCells(CellList);
 		.my_name(I);
-		.concat("cell", X, "_", Y + 1, Cell1);
-		.concat("cell", X + 1, "_", Y + 1, Cell2);
-		.concat("cell", X + 1, "_", Y, Cell3);
-		.send(Cell1, achieve, waveHR(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveDF(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveVD(Player, 1, 4, [I])).
-@sw2[atomic]		
-+!startWave(Player)
-	: leftColumn & bottomRow
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X - 1, "_", Y, Cell1);
-		.concat("cell", X - 1, "_", Y + 1, Cell2);
-		.concat("cell", X, "_", Y + 1, Cell3);
-		.send(Cell1, achieve, waveVU(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveSF(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveHR(Player, 1, 4, [I])).
-@sw3[atomic]		
-+!startWave(Player)
-	: rightColumn & bottomRow
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X - 1, "_", Y, Cell1);
-		.concat("cell", X - 1, "_", Y - 1, Cell2);
-		.concat("cell", X, "_", Y - 1, Cell3);
-		.send(Cell1, achieve, waveVU(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveDB(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveHL(Player, 1, 4, [I])).		
-@sw4[atomic]
-+!startWave(Player)
-	: rightColumn & topRow
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X, "_", Y - 1, Cell1);
-		.concat("cell", X + 1, "_", Y - 1, Cell2);
-		.concat("cell", X + 1, "_", Y, Cell3);
-		.send(Cell1, achieve, waveHL(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveSB(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveVD(Player, 1, 4, [I])).		
-@sw5[atomic]
-+!startWave(Player)
-	: leftColumn
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X - 1, "_", Y, Cell1);
-		.concat("cell", X - 1, "_", Y + 1, Cell2);
-		.concat("cell", X, "_", Y + 1, Cell3);
-		.concat("cell", X + 1, "_", Y, Cell4);
-		.concat("cell", X + 1, "_", Y + 1, Cell5);
-		.send(Cell1, achieve, waveVU(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveSF(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveHR(Player, 1, 4, [I]));
-		.send(Cell4, achieve, waveVD(Player, 1, 4, [I]));
-		.send(Cell5, achieve, waveDF(Player, 1, 4, [I])).
-
-@sw6[atomic]		
-+!startWave(Player)
-	: rightColumn 
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X - 1, "_", Y, Cell1);
-		.concat("cell", X - 1, "_", Y - 1, Cell2);
-		.concat("cell", X, "_", Y - 1, Cell3);
-		.concat("cell", X + 1, "_", Y, Cell4);
-		.concat("cell", X + 1, "_", Y - 1, Cell5);
-		.send(Cell1, achieve, waveVU(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveDB(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveHL(Player, 1, 4, [I]));
-		.send(Cell4, achieve, waveVD(Player, 1, 4, [I]));
-		.send(Cell5, achieve, waveSB(Player, 1, 4, [I])).
-@sw7[atomic]
-+!startWave(Player)
-	: topRow 
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X, "_", Y - 1, Cell1);
-		.concat("cell", X, "_", Y + 1, Cell2);
-		.concat("cell", X + 1, "_", Y - 1, Cell3);
-		.concat("cell", X + 1, "_", Y, Cell4);
-		.concat("cell", X + 1, "_", Y + 1, Cell5);
-		.send(Cell1, achieve, waveHL(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveHR(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveSB(Player, 1, 4, [I]));
-		.send(Cell4, achieve, waveVD(Player, 1, 4, [I]));
-		.send(Cell5, achieve, waveDF(Player, 1, 4, [I])).
-@sw8[atomic]
-+!startWave(Player)
-	: bottomRow 
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X - 1, "_", Y - 1, Cell1);
-		.concat("cell", X - 1, "_", Y, Cell2);
-		.concat("cell", X - 1, "_", Y + 1, Cell3);
-		.concat("cell", X, "_", Y - 1, Cell4);
-		.concat("cell", X, "_", Y + 1, Cell5);
-		.send(Cell1, achieve, waveDB(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveVU(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveSF(Player, 1, 4, [I]));
-		.send(Cell4, achieve, waveHL(Player, 1, 4, [I]));
-		.send(Cell5, achieve, waveHR(Player, 1, 4, [I])).
-@sw9[atomic]
-+!startWave(Player)
-	: true
-	<-	?position(X, Y);
-		.my_name(I);
-		.concat("cell", X - 1, "_", Y - 1, Cell1);
-		.concat("cell", X - 1, "_", Y, Cell2);
-		.concat("cell", X - 1, "_", Y + 1, Cell3);
-		.concat("cell", X, "_", Y - 1, Cell4);
-		.concat("cell", X, "_", Y + 1, Cell5);
-		.concat("cell", X + 1, "_", Y - 1, Cell6);
-		.concat("cell", X + 1, "_", Y, Cell7);
-		.concat("cell", X + 1, "_", Y + 1, Cell8);
-		.send(Cell1, achieve, waveDB(Player, 1, 4, [I]));
-		.send(Cell2, achieve, waveVU(Player, 1, 4, [I]));
-		.send(Cell3, achieve, waveSF(Player, 1, 4, [I]));
-		.send(Cell4, achieve, waveHL(Player, 1, 4, [I]));
-		.send(Cell5, achieve, waveHR(Player, 1, 4, [I]));
-		.send(Cell6, achieve, waveSB(Player, 1, 4, [I]));
-		.send(Cell7, achieve, waveVD(Player, 1, 4, [I]));
-		.send(Cell8, achieve, waveDF(Player, 1, 4, [I])).
+		for ( .member(Cell, CellList) ) {
+			.send(Cell, achieve, wave(Player, 1, 4, [I]));
+		}.	
 	
 /*
-	waveHL - wave horizontal left
-	Распространяю волну по горизонтали налево
-	Останавливаюсь либо когда "сила волны" (количество оставшихся клеток) равно 0,
-	либо когда достиг края игрового поля (дальше передавать некуда).
+	Распространяю волну в текущем направлении
 	
 	При распространении могут возникнуть следующие случаи:
-	- 
-	
-	Распространение волны в других направлениях абсолютно аналогично этому.
+	- "Сила волны" равна 0.
+		В данном случае ход игрока уже не значим для текущей клетки и для всех 
+		последующих, волновой процесс останавливается.
+	- Достигнут край игрового поля. 
+		В данном случае одно из полей координат следующей клетки будет либо равно 0, 
+		либо будет больше чем число рядов/столбцов соответсвенно. При возникновении
+		данной ситуации, прекращаю волновой процесс в заданном направлении.
+		Данная проверка осуществляется в другом плане (sendForward) после формирования
+		координат следующей ячейки.
+	- Очередная клетка принадлежит тому игроку, для которого рассчитывается угроза.
+		В данном случае вместо деления угроза на 2, угроза увеличивается на 1 и 
+		волновой процесс в заданном направлении продолжается. 
+		TODO:
+		При этом также начинается волновой процесс в обратном направлении (для перерасчета угрозы клеток).
+	- Очередная клетка принадлежит другому игроку
+		В данном случае волновой процесс расчета угрозы для текущего игрока в 
+		заданном направлении прекращается и начинается перерасчет угрозы для другого
+		игрока в том же направлении. (TODO)
+		
 */
-@whl1[atomic]		
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@whl2[atomic]
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: leftColumn.	
-@whl3[atomic]	
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList) 
-	<- 	?position(X, Y);
-		.concat("cell", X, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveHL(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@whl4[atomic]	
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_hl(Player, _);
+@w1[atomic]		
++!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: 	CellsToGo = 0.	
+@w2[atomic]
++!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: 	not busy(Player) & .my_name(I) & .member(I, SourceList).	
+@w3[atomic]	
++!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: 	busy(Player) & .my_name(I) & .member(I, SourceList)
+	<-	!sendForward(Player, Threat + 1, CellsToGo - 1, SourceList, PrevCell).
+@w4[atomic]	
++!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: 	not busy(_)
+	<- 	-threat_hl(Player, _);
 		+threat_hl(Player, Threat);
-		.concat("cell", X, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveHL(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@whl5[atomic]
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
+		!sendForward(Player, Threat / 2, CellsToGo - 1, SourceList, PrevCell).
+@w5[atomic]
++!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: 	busy(Player)
+	<- 	.my_name(I);
 		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveHL(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveHR(Player, 1, 4, NewSourceList)).
-@whl6[atomic]
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer) & .my_name(I) & .member(I, SourceList).
-@whl7[atomic]
-+!waveHL(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X, "_", Y - 1, NextCell);
-		.my_name(I);
+		.send(PrevCell, achieve, wave(Player, 1, 4, NewSourceList));
+		!sendForward(Player, Threat + 1, CellsToGo - 1, NewSourceList, PrevCell).
+@w7[atomic]
++!wave(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
+	: 	busy(AnotherPlayer)
+	<- 	.my_name(I);
 		.concat(SourceList, [I], NewSourceList);
-		.send(NextCell, achieve, waveHL(AnotherPlayer, 1, 4, NewSourceList)).
+		!sendForward(AnotherPlayer, 1, 4, NewSourceList, PrevCell).
 	
 /*
-	waveHR - wave horizontal right
-	Распространяю волну по горизонтали направо
+	Пересылаю волну дальше, если не уперся в край игрового поля.
 */
-@whr1[atomic]		
-+!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@whr2[atomic]
-+!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: rightColumn.
-@whr3[atomic]
-+!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList)
-	<- 	?position(X, Y);
-		.concat("cell", X, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveHR(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@whr4[atomic]	
-+!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_hr(Player, _);
-		+threat_hr(Player, Threat);
-		.concat("cell", X, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveHR(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@whr5[atomic]
-+!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveHR(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveHL(Player, 1, 4, NewSourceList)).
-// Тут должно быть распространение волны в обратном направлении
-@whr6[atomic]
-+!waveHR(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X, "_", Y + 1, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveHR(AnotherPlayer, 1, 4, [I])).
-	
-/*
-	waveVU - wave vertical up
-	Распространяю волну по вертикали наверх
-*/
-@wvu1[atomic]		
-+!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@wvu2[atomic]
-+!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: topRow.	
-@wvu3[atomic]	
-+!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList) 
-	<- 	?position(X, Y);
-		.concat("cell", X - 1, "_", Y, NextCell);
-		.send(NextCell, achieve, waveVU(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@wvu4[atomic]	
-+!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_vu(Player, _);
-		+threat_vu(Player, Threat);
-		.concat("cell", X - 1, "_", Y, NextCell);
-		.send(NextCell, achieve, waveVU(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@wvu5[atomic]
-+!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X - 1, "_", Y, NextCell);
-		.send(NextCell, achieve, waveVU(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveVD(Player, 1, 4, NewSourceList)).
-@wvu6[atomic]
-+!waveVU(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X - 1, "_", Y, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveVU(AnotherPlayer, 1, 4, [I])).
-
-/*
-	waveVD - wave vertical down
-	Распространяю волну по вертикали вниз
-*/
-@wvd1[atomic]		
-+!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@wvd2[atomic]
-+!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: bottomRow.
-@wvd3[atomic]
-+!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList)
-	<- 	?position(X, Y);
-		.concat("cell", X + 1, "_", Y, NextCell);
-		.send(NextCell, achieve, waveVD(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@wvd4[atomic]	
-+!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_vd(Player, _);
-		+threat_vd(Player, Threat);
-		.concat("cell", X + 1, "_", Y, NextCell);
-		.send(NextCell, achieve, waveVD(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@wvd5[atomic]
-+!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X + 1, "_", Y, NextCell);
-		.send(NextCell, achieve, waveVD(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveVU(Player, 1, 4, NewSourceList)).
-@wvd6[atomic]
-+!waveVD(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X + 1, "_", Y, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveVD(AnotherPlayer, 1, 4, [I])).
-
-/*
-	waveDB - wave diagonal back
-	Распространяю волну по диагонали назад
-*/
-@wdb1[atomic]		
-+!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@wdb2[atomic]
-+!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: leftColumn | topRow.	
-@wdb3[atomic]	
-+!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList) 
-	<- 	?position(X, Y);
-		.concat("cell", X - 1, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveDB(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@wdb4[atomic]	
-+!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_db(Player, _);
-		+threat_db(Player, Threat);
-		.concat("cell", X - 1, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveDB(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@wdb5[atomic]
-+!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X - 1, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveDB(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveDF(Player, 1, 4, NewSourceList)).
-@wdb6[atomic]
-+!waveDB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X - 1, "_", Y - 1, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveDB(AnotherPlayer, 1, 4, [I])).
-
-/*
-	waveDF - wave diagonal forward
-	Распространяю волну по диагонали вперед
-*/
-@wdf1[atomic]		
-+!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@wdf2[atomic]
-+!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: rightColumn | bottomRow.
-@wdf3[atomic]
-+!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList)
-	<- 	?position(X, Y);
-		.concat("cell", X + 1, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveDF(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@wdf4[atomic]	
-+!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_df(Player, _);
-		+threat_df(Player, Threat);
-		.concat("cell", X + 1, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveDF(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@wdf5[atomic]
-+!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X + 1, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveDF(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveDB(Player, 1, 4, NewSourceList)).
-@wdf6[atomic]
-+!waveDF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X + 1, "_", Y + 1, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveDF(AnotherPlayer, 1, 4, [I])).	
-	
-/*
-	waveSB - wave side [diagonal] back
-	Распространяю волну по побочной диагонали назад
-*/
-@wsb1[atomic]		
-+!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@wsb2[atomic]
-+!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: leftColumn | bottomRow.	
-@wsb3[atomic]	
-+!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList) 
-	<- 	?position(X, Y);
-		.concat("cell", X + 1, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveSB(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@wsb4[atomic]	
-+!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_sb(Player, _);
-		+threat_sb(Player, Threat);
-		.concat("cell", X + 1, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveSB(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@wsb5[atomic]
-+!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X + 1, "_", Y - 1, NextCell);
-		.send(NextCell, achieve, waveSB(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveSF(Player, 1, 4, NewSourceList)).
-@wsb6[atomic]
-+!waveSB(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X + 1, "_", Y - 1, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveSB(AnotherPlayer, 1, 4, [I])).
-	
-/*
-	waveSF - wave side [diagonal] forward
-	Распространяю волну по побочной диагонали вперед
-*/
-@wsf1[atomic]		
-+!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: CellsToGo = 0.
-@wsf2[atomic]
-+!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: rightColumn | topRow.
-@wsf3[atomic]
-+!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: .my_name(I) & .member(I, SourceList)
-	<- 	?position(X, Y);
-		.concat("cell", X - 1, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveSF(Player, Threat + 1, CellsToGo - 1, SourceList)).
-@wsf4[atomic]	
-+!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: not busy(_)
-	<- 	?position(X, Y);
-		-threat_sf(Player, _);
-		+threat_sf(Player, Threat);
-		.concat("cell", X - 1, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveSF(Player, Threat / 2, CellsToGo - 1, SourceList)).
-@wsf5[atomic]
-+!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(Player)
-	<- 	?position(X, Y);
-		.my_name(I);
-		.concat(SourceList, [I], NewSourceList);
-		.concat("cell", X - 1, "_", Y + 1, NextCell);
-		.send(NextCell, achieve, waveSF(Player, Threat + 1, CellsToGo - 1, NewSourceList));
-		.send(PrevCell, achieve, waveSB(Player, 1, 4, NewSourceList)).
-@wsf6[atomic]
-+!waveSF(Player, Threat, CellsToGo, SourceList)[source(PrevCell)]
-	: busy(AnotherPlayer)
-	<- 	?position(X, Y);
-		.concat("cell", X - 1, "_", Y + 1, NextCell);
-		.my_name(I);
-		.send(NextCell, achieve, waveSF(AnotherPlayer, 1, 4, [I])).	
-	
++!sendForward(Player, Threat, CellsToGo, SourceList, PrevCell)
+	:	true
+	<-	?position(X, Y);
+		.send(PrevCell, askOne, position(PrevX, PrevY), position(PrevX, PrevY));
+		?rows(R);
+		?columns(C);
+		NextX = X + X - PrevX;
+		NextY = Y + Y - PrevY;
+		if ( NextX \== 0 & NextX \== R + 1 & NextY \== 0 & NextY \== C + 1 ) {
+			.concat("cell", NextX, "_", NextY, NextCell);
+			.send(NextCell, achieve, wave(Player, Threat, CellsToGo, SourceList));
+		}.
+		
 /*
 	А это все потому что правила не работают с askOne
 */
 @fsdw1[atomic]
 +threat_hl(Player, HL)
-	: threat_hr(Player, HR) & threat(Player, Threat) & HL + HR > Threat
+	: 	threat_hr(Player, HR) & threat(Player, Threat) & HL + HR > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, HL + HR).
 @fsdw2[atomic]
 +threat_hr(Player, HR)
-	: threat_hl(Player, HL) & threat(Player, Threat) & HL + HR > Threat
+	: 	threat_hl(Player, HL) & threat(Player, Threat) & HL + HR > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, HL + HR).
 @fsdw3[atomic]
 +threat_vu(Player, VU)
-	: threat_vd(Player, VD) & threat(Player, Threat) & VU + VD > Threat
+	: 	threat_vd(Player, VD) & threat(Player, Threat) & VU + VD > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, VU + VD).
 @fsdw4[atomic]
 +threat_vd(Player, VD)
-	: threat_vu(Player, VU) & threat(Player, Threat) & VU + VD > Threat
+	: 	threat_vu(Player, VU) & threat(Player, Threat) & VU + VD > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, VU + VD).
 @fsdw5[atomic]
 +threat_db(Player, DB)
-	: threat_df(Player, DF) & threat(Player, Threat) & DB + DF > Threat
+	: 	threat_df(Player, DF) & threat(Player, Threat) & DB + DF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, DB + DF).
 @fsdw6[atomic]
 +threat_df(Player, DF)
-	: threat_db(Player, DB) & threat(Player, Threat) & DB + DF > Threat
+	: 	threat_db(Player, DB) & threat(Player, Threat) & DB + DF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, DB + DF).
 @fsdw7[atomic]
 +threat_sb(Player, SB)
-	: threat_sf(Player, SF) & threat(Player, Threat) & SB + SF > Threat
+	: 	threat_sf(Player, SF) & threat(Player, Threat) & SB + SF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, SB + SF).
 @fsdw8[atomic]
 +threat_sf(Player, SF)
-	: threat_sb(Player, SB) & threat(Player, Threat) & SB + SF > Threat
+	: 	threat_sb(Player, SB) & threat(Player, Threat) & SB + SF > Threat
 	<-	-threat(Player, Threat);
 		+threat(Player, SB + SF).
 		
@@ -619,8 +301,8 @@ sideWin(Player) :- threat_hl(Player, HL) & threat_hr(Player, HR) & HL + HR >= 4.
 	Заглушки
 */
 +begin[source(A)]
-	: true 
+	: 	true 
 	<- 	-begin[source(A)].
 +opponent(Name)[source(A)]
-	: true
+	: 	true
 	<- 	-opponent(Name)[source(A)].
