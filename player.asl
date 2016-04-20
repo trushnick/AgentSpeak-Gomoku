@@ -48,7 +48,7 @@ opponent_threat(OMV) :- opponent_threats_values(OVL) & .max(OVL, OMV).
 @t[atomic]
 +turn[source(A)]
 	: 	true
-	<- 	.wait(300);
+	<- 	.wait(100);
 		?rows(R);
 		?columns(C);
 		.my_name(I);

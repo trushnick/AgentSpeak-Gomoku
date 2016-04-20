@@ -10,9 +10,8 @@ public class GomokuEnv extends Environment {
 	private static final int field_size = 15;
 	private static final int cell_size = 45;
 	
-	private GomokuRoutines routines = new GomokuRoutines(field_size);
 	private GUI gui = new GUI(field_size, cell_size);
-    private Logger logger = Logger.getLogger("course_paper.mas2j." + BoardGUI.class.getName());
+    	private Logger logger = Logger.getLogger("course_paper.mas2j." + GomokuEnv.class.getName());
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
@@ -28,10 +27,8 @@ public class GomokuEnv extends Environment {
 				int y = Integer.parseInt(action.getTerm(1).toString());
 				if (agName.equals("player1")) {		
 					gui.changeCellState(x, y, "X");
-					routines.changeState(x - 1, y - 1, GomokuRoutines.Player.FIRST);
 				} else {
-					gui.changeCellState(x, y, "O");
-					routines.changeState(x - 1, y - 1, GomokuRoutines.Player.SECOND);	
+					gui.changeCellState(x, y, "O");	
 				}
 			} catch (Exception e) {
 				logger.info(e.getMessage());

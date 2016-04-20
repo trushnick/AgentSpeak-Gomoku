@@ -64,9 +64,9 @@ bottomRow :- position(X, _) & rows(R) & X == R.
 +!lookAround
 	:	rightColumn & bottomRow
 	<-	?position(X, Y);
-		.concat("cell", X    , "_", Y + 1, Cell1);
-		.concat("cell", X + 1, "_", Y    , Cell2);
-		.concat("cell", X + 1, "_", Y + 1, Cell3);
+		.concat("cell", X    , "_", Y - 1, Cell1);
+		.concat("cell", X - 1, "_", Y - 1, Cell2);
+		.concat("cell", X - 1, "_", Y    , Cell3);
 		-+surroundingCells([Cell1, Cell2, Cell3]).	
 @la5[atomic]
 +!lookAround
